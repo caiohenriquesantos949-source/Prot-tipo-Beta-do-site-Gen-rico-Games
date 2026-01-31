@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenericoGames.com</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+        }
+        h1, h2, h3, h4, h5, h6, .font-header {
+            font-family: 'Poppins', sans-serif;
+        }
+        .card-bg {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+        }
+        .header-bg {
+            background-color: #161b22;
+            border-bottom: 1px solid #30363d;
+        }
+        .btn-primary {
+            background-color: #238636;
+            color: #ffffff;
+            font-weight: 700;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+            padding: 8px 16px;
+        }
+        .btn-primary:hover {
+            background-color: #2ea043;
+        }
+        .btn-secondary {
+             background-color: #30363d;
+             color: #c9d1d9;
+             font-weight: 700;
+             border-radius: 6px;
+             transition: background-color 0.2s;
+             padding: 8px 16px;
+        }
+        .btn-secondary:hover {
+            background-color: #484f58;
+        }
+        .input-field {
+            background-color: #0d1117;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            border-radius: 6px;
+            padding: 8px 12px;
+            width: 100%;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
+        }
+        .icon-size {
+            font-size: 28px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .icon-size:hover {
+            color: #58a6ff;
+        }
+        .heart-icon {
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .heart-icon.favorited {
+            color: #f76190;
+            font-weight: bold;
+        }
+        .heart-icon:hover {
+            transform: scale(1.1);
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+        }
+        .hidden {
+            display: none;
+        }
+        .spec-list ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+        .spec-list li {
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <header class="header-bg sticky top-0 z-30 shadow-md">
+        <nav class="container mx-auto px-4 py-3 flex justify-between items-center">
+            
+            <div class="flex items-center gap-3">
+                <img src="Genérico Games.jpg" alt="Logo Genérico Games" class="h-12 w-auto">
+                <span class="font-header text-2xl text-white">Genérico Games</span>
+            </div>
+
+            <div class="flex-1 max-w-lg px-8">
+                <div class="relative">
+                    <input type="text" id="search-bar" class="input-field w-full pl-10" placeholder="Busque na Genérico!">
+                    <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <div id="auth-section" class="flex items-center gap-2">
+                    <i class="ph ph-user-circle icon-size"></i>
+                    <div id="user-info" class="text-sm">
+                    </div>
+                </div>
+                
+                <div id="favorites-btn" class="relative icon-size">
+                    <i class="ph ph-heart"></i>
+                    <span id="favorites-count" class="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-1.5 py-0.5 hidden">0</span>
+                </div>
+                
+                <div id="cart-btn" class="relative icon-size">
+                    <i class="ph ph-shopping-cart"></i>
+                    <span id="cart-count" class="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-1.5 py-0.5 hidden">0</span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <h2 class="font-header text-3xl text-white mb-6">Produtos em Destaque</h2>
+        <div id="product-grid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        </div>
+    </main>
+
+    <div id="cart-modal" class="modal-backdrop fixed inset-0 z-40 flex justify-end hidden">
+        <div class="card-bg w-full md:w-1/3 h-full shadow-2xl flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b border-gray-700">
+                <h2 class="font-header text-xl text-white">Meu Carrinho</h2>
+                <button id="close-cart-modal" class="text-2xl text-gray-400 hover:text-white">&times;</button>
+            </div>
+            
+            <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-4">
+                <p id="empty-cart-msg" class="text-gray-400">Seu carrinho está vazio.</p>
+            </div>
+            
+            <div class="p-4 border-t border-gray-700 space-y-3">
+                <div class="flex gap-2">
+                    <input type="text" id="coupon-input" class="input-field flex-1" placeholder="Inserir cupom">
+                    <button id="apply-coupon-btn" class="btn-secondary whitespace-nowrap">Aplicar</button>
+                </div>
+                <p id="coupon-message" class="text-sm h-4"></p>
+
+                <div class="space-y-1 text-lg">
+                    <div class="flex justify-between text-gray-400">
+                        <span>Subtotal:</span>
+                        <span id="cart-subtotal">R$ 0,00</span>
+                    </div>
+                     <div class="flex justify-between text-green-400 text-sm">
+                        <span>Desconto:</span>
+                        <span id="cart-discount">- R$ 0,00</span>
+                    </div>
+                    <div class="flex justify-between text-white font-bold text-xl">
+                        <span>Total:</span>
+                        <span id="cart-total">R$ 0,00</span>
+                    </div>
+                </div>
+                <button class="btn-primary w-full mt-2">Continuar a compra</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="favorites-modal" class="modal-backdrop fixed inset-0 z-40 flex justify-end hidden">
+        <div class="card-bg w-full md:w-1/3 h-full shadow-2xl flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b border-gray-700">
+                <h2 class="font-header text-xl text-white">Minha Lista de Desejos</h2>
+                <button id="close-favorites-modal" class="text-2xl text-gray-400 hover:text-white">&times;</button>
+            </div>
+            
+            <div id="favorites-items" class="flex-1 overflow-y-auto p-4 space-y-4">
+                <p id="empty-favorites-msg" class="text-gray-400">Sua lista de desejos está vazia.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="auth-modal" class="modal-backdrop fixed inset-0 z-40 flex items-center justify-center hidden">
+        <div class="card-bg w-full max-w-md p-6 rounded-lg shadow-2xl relative">
+            <button id="close-auth-modal" class="absolute top-3 right-4 text-2xl text-gray-400 hover:text-white">&times;</button>
+            
+            <div id="auth-content">
+                <div id="login-form">
+                    <h2 class="font-header text-2xl text-white mb-6">Login</h2>
+                    <form id="login-form-inner" class="space-y-4">
+                        <div>
+                            <label for="login-email" class="block text-sm font-medium text-gray-300">Email</label>
+                            <input type="email" id="login-email" class="input-field mt-1" required>
+                        </div>
+                        <div>
+                            <label for="login-password" class="block text-sm font-medium text-gray-300">Senha</label>
+                            <input type="password" id="login-password" class="input-field mt-1" required>
+                        </div>
+                        <button type="submit" class="btn-primary w-full">Entrar</button>
+                    </form>
+                    <p class="text-sm text-center text-gray-400 mt-4">
+                        Não tem uma conta? 
+                        <button id="show-register-btn" class="font-medium text-blue-400 hover:underline">Crie uma</button>
+                    </p>
+                </div>
+
+                <div id="register-form" class="hidden">
+                    <h2 class="font-header text-2xl text-white mb-6">Criar Conta</h2>
+                    <form id="register-form-inner" class="space-y-4">
+                        <div>
+                            <label for="register-name" class="block text-sm font-medium text-gray-300">Nome</label>
+                            <input type="text" id="register-name" class="input-field mt-1" required>
+                        </div>
+                        <div>
+                            <label for="register-email" class="block text-sm font-medium text-gray-300">Email</label>
+                            <input type="email" id="register-email" class="input-field mt-1" required>
+                        </div>
+                        <div>
+                            <label for="register-password" class="block text-sm font-medium text-gray-300">Senha</label>
+                            <input type="password" id="register-password" class="input-field mt-1" required>
+                        </div>
+                        <button type="submit" class="btn-primary w-full">Criar Conta</button>
+                    </form>
+                    <p class="text-sm text-center text-gray-400 mt-4">
+                        Já tem uma conta? 
+                        <button id="show-login-btn" class="font-medium text-blue-400 hover:underline">Faça login</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="product-modal" class="modal-backdrop fixed inset-0 z-40 flex items-center justify-center hidden">
+        <div class="card-bg w-full max-w-3xl p-6 rounded-lg shadow-2xl relative max-h-[90vh] overflow-y-auto">
+             <button id="close-product-modal" class="absolute top-3 right-4 text-2xl text-gray-400 hover:text-white">&times;</button>
+            
+             <div id="product-modal-content" class="flex flex-col md:flex-row gap-6">
+                 <div class="w-full md:w-1/2">
+                      <img id="modal-product-image" src="" alt="Imagem do Produto" class="w-full h-auto object-cover rounded-lg border border-gray-700">
+                 </div>
+                 
+                 <div class="w-full md:w-1/2 flex flex-col">
+                     <h2 id="modal-product-name" class="font-header text-3xl text-white mb-2">Nome do Produto</h2>
+                     <p id="modal-product-price" class="text-3xl text-green-400 font-bold mb-4">R$ 0,00</p>
+                     
+                     <h3 class="font-header text-lg text-white mb-2 mt-4">Descrição</h3>
+                     <div id="modal-product-desc" class="spec-list text-gray-300 text-sm flex-1">
+                     </div>
+                     
+                     <div class="flex gap-2 mt-6">
+                         <button id="modal-add-to-cart-btn" class="btn-primary flex-1">Adicionar ao Carrinho</button>
+                         <button id="modal-add-to-fav-btn" class="p-2 btn-secondary">
+                             <i class="ph ph-heart text-xl"></i>
+                         </button>
+                     </div>
+                 </div>
+             </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const products = [
+                { 
+                    id: 1, 
+                    name: "PC GAMER COMPLETO", 
+                    price: 12500.00, 
+                    image: "pc gamer.jpg", 
+                    description: `
+                        Mergulhe de cabeça com este PC Gamer completo. Esta máquina vem pronta para rodar tudo, equipada com:
+                        <br><br>
+                        <strong>Componentes Internos:</strong>
+                        <ul>
+                            <li><strong>Processador:</strong> AMD Ryzen 7 5800X</li>
+                            <li><strong>Placa de Vídeo:</strong> NVIDIA GeForce RTX 4070 12GB</li>
+                            <li><strong>Placa-Mãe:</strong> B550M AORUS Elite</li>
+                            <li><strong>Memória:</strong> 32GB (2x16GB) DDR4 3600MHz</li>
+                            <li><strong>Armazenamento:</strong> SSD NVMe 1TB Gen4</li>
+                            <li><strong>Refrigeração:</strong> Water Cooler 240mm RGB</li>
+                            <li><strong>Fonte:</strong> Fonte 750W 80 Plus Gold Modular</li>
+                        </ul>
+                        <br>
+                        <strong>Periféricos Inclusos:</strong>
+                        <ul>
+                            <li>Monitor Gamer 27" Curvo 165Hz</li>
+                            <li>Teclado Mecânico RGB Switch Red</li>
+                            <li>Mouse Gamer Razer 16000 DPI</li>
+                            <li>Headset Gamer 7.1 Surround</li>
+                            <li>Mousepad Extendido</li>
+                        </ul>
+                    ` 
+                },
+                { id: 2, name: "Monitor Acer Nitro", price: 2900.00, image: "monitor.jpg", description: "Monitor Gamer Acer Nitro 27' Full HD, 165Hz, 1ms. Resposta ultra-rápida e cores vibrantes para sua jogatina." },
+                { id: 3, name: "Xbox Series X", price: 3500.00, image: "xbox.jpg", description: "O Xbox mais rápido e poderoso de todos os tempos. Jogue milhares de títulos de quatro gerações de consoles. SSD de 1TB." },
+                { 
+                    id: 4, 
+                    name: "Nintendo Switch", 
+                    price: 2138.07, 
+                    image: "Nintendo.jpg", 
+                    description: "Jogue em casa ou em movimento. O Nintendo Switch (Modelo OLED) oferece uma tela vibrante de 7 polegadas, <strong>64GB de armazenamento interno</strong> e três modos de jogo." 
+                },
+                { id: 5, name: "Fone Gamer Logitech G435", price: 454.98, image: "fone.jpg", description: "Conheça o G435 LIGHTSPEED. Fone de ouvido gamer sem fio leve e confortável, com microfone integrado e conectividade Bluetooth." },
+                { 
+                    id: 6, 
+                    name: "Playstation 5", 
+                    price: 3905.07, 
+                    image: "ps5.png", 
+                    description: "O console PS5 oferece novas possibilidades de jogos. Carregamento ultrarrápido com um <strong>SSD de altíssima velocidade de 825GB</strong> e áudio 3D." 
+                },
+                { id: 7, name: "Processador AMD Ryzen 7", price: 3222.21, image: "processador.jpg", description: "Processador AMD Ryzen 7 5800X, 8-Core, 16-Threads, 3.8GHz (4.7GHz Max Turbo). Desempenho de elite para gamers e criadores." },
+                { id: 8, name: "Memória RAM Vengeance", price: 162.34, image: "memória.jpg", description: "Memória Corsair Vengeance RGB PRO, 16GB (2x8GB), DDR4, 3200MHz, C16. Ilumine seu sistema com iluminação RGB." },
+                { id: 9, name: "Mouse Razer DeathAdder", price: 206.51, image: "mouse.webp", description: "Com mais de 10 milhões de vendidas, o Razer DeathAdder V2 é um mouse gamer ergonômico com sensor óptico de 20.000 DPI." }
+            ];
+
+            const couponDatabase = {
+                "GENERIOGEMES50%": 0.50
+            };
+
+            let cart = [];
+            let favorites = [];
+            let currentUser = null;
+            let appliedCoupon = null;
+
+            const productGrid = document.getElementById('product-grid');
+            const searchBar = document.getElementById('search-bar');
+            
+            const cartBtn = document.getElementById('cart-btn');
+            const cartModal = document.getElementById('cart-modal');
+            const closeCartModal = document.getElementById('close-cart-modal');
+            const cartItems = document.getElementById('cart-items');
+            const cartCount = document.getElementById('cart-count');
+            const emptyCartMsg = document.getElementById('empty-cart-msg');
+            const cartSubtotal = document.getElementById('cart-subtotal');
+            const cartDiscount = document.getElementById('cart-discount');
+            const cartTotal = document.getElementById('cart-total');
+            const couponInput = document.getElementById('coupon-input');
+            const applyCouponBtn = document.getElementById('apply-coupon-btn');
+            const couponMessage = document.getElementById('coupon-message');
+            
+            const favoritesBtn = document.getElementById('favorites-btn');
+            const favoritesModal = document.getElementById('favorites-modal');
+            const closeFavoritesModal = document.getElementById('close-favorites-modal');
+            const favoritesItems = document.getElementById('favorites-items');
+            const favoritesCount = document.getElementById('favorites-count');
+            const emptyFavoritesMsg = document.getElementById('empty-favorites-msg');
+
+            const authSection = document.getElementById('auth-section');
+            const userInfo = document.getElementById('user-info');
+            const authModal = document.getElementById('auth-modal');
+            const closeAuthModal = document.getElementById('close-auth-modal');
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const loginFormInner = document.getElementById('login-form-inner');
+            const registerFormInner = document.getElementById('register-form-inner');
+            const showRegisterBtn = document.getElementById('show-register-btn');
+            const showLoginBtn = document.getElementById('show-login-btn');
+            
+            const productModal = document.getElementById('product-modal');
+            const closeProductModal = document.getElementById('close-product-modal');
+            const modalProductImage = document.getElementById('modal-product-image');
+            const modalProductName = document.getElementById('modal-product-name');
+            const modalProductPrice = document.getElementById('modal-product-price');
+            const modalProductDesc = document.getElementById('modal-product-desc');
+            const modalAddToCartBtn = document.getElementById('modal-add-to-cart-btn');
+            const modalAddToFavBtn = document.getElementById('modal-add-to-fav-btn');
+
+            const formatCurrency = (value) => {
+                return value.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
+            };
+
+            const renderProducts = (searchTerm = "") => {
+                productGrid.innerHTML = "";
+                
+                const filteredProducts = products.filter(p => 
+                    p.name.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+                
+                if (filteredProducts.length === 0) {
+                    productGrid.innerHTML = `<p class="text-gray-400 col-span-full">Nenhum produto encontrado para "${searchTerm}".</p>`;
+                    return;
+                }
+
+                filteredProducts.forEach(product => {
+                    const isFavorited = favorites.includes(product.id);
+                    
+                    const productCard = document.createElement('div');
+                    productCard.className = 'card-bg rounded-lg shadow-lg overflow-hidden flex flex-col transition-transform transform hover:scale-105';
+                    productCard.innerHTML = `
+                        <div class="p-4 cursor-pointer" data-product-id="${product.id}">
+                            <img src="${product.image}" alt="${product.name}" class="w-full h-48 object-cover rounded-md mb-4">
+                            <h3 class="font-header text-lg text-white truncate" title="${product.name}">${product.name}</h3>
+                        </div>
+                        <div class="p-4 flex-grow flex flex-col justify-end">
+                            <p class="text-xl font-bold text-green-400 mb-4">${formatCurrency(product.price)}</p>
+                            <div class="flex gap-2">
+                                <button class="add-to-cart-btn btn-primary flex-1 text-sm" data-product-id="${product.id}">
+                                    <i class="ph ph-shopping-cart-simple"></i> Adicionar
+                                </button>
+                                <button class="add-to-fav-btn btn-secondary p-2 ${isFavorited ? 'favorited' : ''}" data-product-id="${product.id}">
+                                    <i class="ph ${isFavorited ? 'ph-fill' : 'ph'} ph-heart heart-icon ${isFavorited ? 'favorited' : ''}"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    productGrid.appendChild(productCard);
+                });
+            };
+
+            const updateCartUI = () => {
+                cartItems.innerHTML = "";
+                let subtotal = 0;
+
+                if (cart.length === 0) {
+                    emptyCartMsg.style.display = 'block';
+                } else {
+                    emptyCartMsg.style.display = 'none';
+                    cart.forEach(item => {
+                        subtotal += item.price * item.quantity;
+                        const cartItemElement = document.createElement('div');
+                        cartItemElement.className = 'flex items-center gap-3 border-b border-gray-700 pb-3';
+                        cartItemElement.innerHTML = `
+                            <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded">
+                            <div class="flex-1">
+                                <h4 class="text-sm text-white font-medium">${item.name}</h4>
+                                <p class="text-xs text-gray-400">Qtd: ${item.quantity}</p>
+                            </div>
+                            <span class="text-sm text-white">${formatCurrency(item.price * item.quantity)}</span>
+                            <button class="remove-from-cart-btn text-red-400 hover:text-red-300" data-product-id="${item.id}">
+                                <i class="ph ph-trash"></i>
+                            </button>
+                        `;
+                        cartItems.appendChild(cartItemElement);
+                    });
+                }
+
+                let discountAmount = 0;
+                if (appliedCoupon) {
+                    discountAmount = subtotal * appliedCoupon.discount;
+                    couponMessage.textContent = `Cupom "${appliedCoupon.code}" aplicado!`;
+                    couponMessage.className = 'text-sm h-4 text-green-400';
+                } else {
+                    couponMessage.textContent = "";
+                    couponMessage.className = 'text-sm h-4';
+                }
+                
+                let total = subtotal - discountAmount;
+
+                cartSubtotal.textContent = formatCurrency(subtotal);
+                cartDiscount.textContent = `- ${formatCurrency(discountAmount)}`;
+                cartTotal.textContent = formatCurrency(total);
+                
+                const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
+                if (totalQuantity > 0) {
+                    cartCount.textContent = totalQuantity;
+                    cartCount.style.display = 'block';
+                } else {
+                    cartCount.style.display = 'none';
+                }
+            };
+            
+            const updateFavoritesUI = () => {
+                favoritesItems.innerHTML = "";
+                
+                if (favorites.length === 0) {
+                    emptyFavoritesMsg.style.display = 'block';
+                } else {
+                    emptyFavoritesMsg.style.display = 'none';
+                    favorites.forEach(productId => {
+                        const product = products.find(p => p.id === productId);
+                        if (!product) return;
+                        
+                        const favItemElement = document.createElement('div');
+                        favItemElement.className = 'flex items-center gap-3 border-b border-gray-700 pb-3';
+                        favItemElement.innerHTML = `
+                            <img src="${product.image}" alt="${product.name}" class="w-16 h-16 object-cover rounded">
+                            <div class="flex-1">
+                                <h4 class="text-sm text-white font-medium">${product.name}</h4>
+                                <p class="text-sm text-green-400">${formatCurrency(product.price)}</p>
+                            </div>
+                            <button class="remove-from-fav-btn text-red-400 hover:text-red-300" data-product-id="${product.id}">
+                                <i class="ph ph-trash"></i>
+                            </button>
+                        `;
+                        favoritesItems.appendChild(favItemElement);
+                    });
+                }
+                
+                if (favorites.length > 0) {
+                    favoritesCount.textContent = favorites.length;
+                    favoritesCount.style.display = 'block';
+                } else {
+                    favoritesCount.style.display = 'none';
+                }
+                
+                document.querySelectorAll('.add-to-fav-btn').forEach(btn => {
+                    const id = parseInt(btn.dataset.productId);
+                    const isFavorited = favorites.includes(id);
+                    const icon = btn.querySelector('.ph-heart');
+                    
+                    if (isFavorited) {
+                        btn.classList.add('favorited');
+                        icon.classList.add('ph-fill', 'favorited');
+                        icon.classList.remove('ph');
+                    } else {
+                        btn.classList.remove('favorited');
+                        icon.classList.remove('ph-fill', 'favorited');
+                        icon.classList.add('ph');
+                    }
+                });
+            };
+
+            const updateAuthUI = () => {
+                if (currentUser) {
+                    userInfo.innerHTML = `
+                        <span class="text-gray-300">Olá, ${currentUser.name}!</span>
+                        <button id="logout-btn" class="text-xs text-red-400 hover:underline">(Sair)</button>
+                    `;
+                } else {
+                    userInfo.innerHTML = `
+                        <button id="login-btn" class="text-sm text-gray-300 hover:text-white">
+                            Entre ou<br>Cadastre-se
+                        </button>
+                    `;
+                }
+            };
+            
+            const toggleModal = (modalElement, show) => {
+                if (show) {
+                    modalElement.classList.remove('hidden');
+                } else {
+                    modalElement.classList.add('hidden');
+                }
+            };
+            
+            const openProductModal = (productId) => {
+                const product = products.find(p => p.id === productId);
+                if (!product) return;
+                
+                modalProductImage.src = product.image;
+                modalProductName.textContent = product.name;
+                modalProductPrice.textContent = formatCurrency(product.price);
+                modalProductDesc.innerHTML = product.description;
+                
+                const isFavorited = favorites.includes(product.id);
+                const favBtnIcon = modalAddToFavBtn.querySelector('.ph-heart');
+                modalAddToFavBtn.classList.toggle('favorited', isFavorited);
+                favBtnIcon.classList.toggle('ph-fill', isFavorited);
+                favBtnIcon.classList.toggle('ph', !isFavorited);
+                
+                modalAddToCartBtn.dataset.productId = product.id;
+                modalAddToFavBtn.dataset.productId = product.id;
+
+                toggleModal(productModal, true);
+            };
+
+            const addToCart = (productId) => {
+                const product = products.find(p => p.id === productId);
+                if (!product) return;
+
+                const existingItem = cart.find(item => item.id === productId);
+                if (existingItem) {
+                    existingItem.quantity++;
+                } else {
+                    cart.push({ 
+                        id: product.id, 
+                        name: product.name, 
+                        price: product.price, 
+                        image: product.image,
+                        quantity: 1 
+                    });
+                }
+                updateCartUI();
+            };
+            
+            const removeFromCart = (productId) => {
+                cart = cart.filter(item => item.id !== productId);
+                updateCartUI();
+            };
+
+            const toggleFavorite = (productId) => {
+                if (favorites.includes(productId)) {
+                    favorites = favorites.filter(id => id !== productId);
+                } else {
+                    favorites.push(productId);
+                }
+                updateFavoritesUI();
+            };
+            
+            const removeFromFavorites = (productId) => {
+                 favorites = favorites.filter(id => id !== productId);
+                 updateFavoritesUI();
+            };
+
+            const applyCoupon = () => {
+                const code = couponInput.value.trim().toUpperCase();
+                
+                if (couponDatabase[code]) {
+                    appliedCoupon = {
+                        code: code,
+                        discount: couponDatabase[code]
+                    };
+                    couponInput.value = "";
+                } else {
+                    appliedCoupon = null;
+                    couponMessage.textContent = "Cupom inválido.";
+                    couponMessage.className = 'text-sm h-4 text-red-400';
+                }
+                updateCartUI();
+            };
+
+            const login = (email, password) => {
+                const users = JSON.parse(localStorage.getItem('gg_users')) || [];
+                const user = users.find(u => u.email === email && u.password === password);
+                
+                if (user) {
+                    currentUser = user;
+                    localStorage.setItem('gg_current_user', JSON.stringify(user));
+                    updateAuthUI();
+                    toggleModal(authModal, false);
+                } else {
+                    alert("Email ou senha inválidos.");
+                }
+            };
+            
+            const register = (name, email, password) => {
+                let users = JSON.parse(localStorage.getItem('gg_users')) || [];
+                
+                if (users.some(u => u.email === email)) {
+                    alert("Este email já está cadastrado.");
+                    return;
+                }
+                
+                const newUser = { name, email, password };
+                users.push(newUser);
+                localStorage.setItem('gg_users', JSON.stringify(users));
+                
+                currentUser = newUser;
+                localStorage.setItem('gg_current_user', JSON.stringify(newUser));
+                updateAuthUI();
+                toggleModal(authModal, false);
+            };
+
+            const logout = () => {
+                currentUser = null;
+                localStorage.removeItem('gg_current_user');
+                updateAuthUI();
+            };
+            
+            const loadSession = () => {
+                const user = localStorage.getItem('gg_current_user');
+                if (user) {
+                    currentUser = JSON.parse(user);
+                }
+                updateAuthUI();
+            };
+
+            searchBar.addEventListener('input', (e) => {
+                renderProducts(e.target.value);
+            });
+
+            cartBtn.addEventListener('click', () => toggleModal(cartModal, true));
+            closeCartModal.addEventListener('click', () => toggleModal(cartModal, false));
+            
+            favoritesBtn.addEventListener('click', () => toggleModal(favoritesModal, true));
+            closeFavoritesModal.addEventListener('click', () => toggleModal(favoritesModal, false));
+            
+            closeProductModal.addEventListener('click', () => toggleModal(productModal, false));
+
+            authSection.addEventListener('click', (e) => {
+                if (e.target.id === 'login-btn' || e.target.parentElement.id === 'login-btn') {
+                     toggleModal(authModal, true);
+                }
+                if (e.target.id === 'logout-btn') {
+                    logout();
+                }
+            });
+            closeAuthModal.addEventListener('click', () => {
+                 toggleModal(authModal, false);
+            });
+
+            showRegisterBtn.addEventListener('click', () => {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+            });
+            showLoginBtn.addEventListener('click', () => {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+            });
+            
+            loginFormInner.addEventListener('submit', (e) => {
+                e.preventDefault();
+                login(e.target.elements['login-email'].value, e.target.elements['login-password'].value);
+            });
+            
+            registerFormInner.addEventListener('submit', (e) => {
+                e.preventDefault();
+                register(
+                    e.target.elements['register-name'].value,
+                    e.target.elements['register-email'].value,
+                    e.target.elements['register-password'].value
+                );
+            });
+
+            applyCouponBtn.addEventListener('click', applyCoupon);
+
+            document.body.addEventListener('click', (e) => {
+                const target = e.target;
+                
+                if (target.classList.contains('add-to-cart-btn') || target.parentElement.classList.contains('add-to-cart-btn')) {
+                    const btn = target.closest('.add-to-cart-btn');
+                    const id = parseInt(btn.dataset.productId);
+                    addToCart(id);
+                }
+                
+                if (target.classList.contains('add-to-fav-btn') || target.parentElement.classList.contains('add-to-fav-btn')) {
+                    const btn = target.closest('.add-to-fav-btn');
+                    const id = parseInt(btn.dataset.productId);
+                    toggleFavorite(id);
+                }
+                
+                if (target.closest('[data-product-id]') && !target.closest('.add-to-cart-btn') && !target.closest('.add-to-fav-btn')) {
+                     const card = target.closest('[data-product-id]');
+                     const id = parseInt(card.dataset.productId);
+                     openProductModal(id);
+                }
+
+                if (target.classList.contains('remove-from-cart-btn') || target.parentElement.classList.contains('remove-from-cart-btn')) {
+                    const btn = target.closest('.remove-from-cart-btn');
+                    const id = parseInt(btn.dataset.productId);
+                    removeFromCart(id);
+                }
+                
+                if (target.classList.contains('remove-from-fav-btn') || target.parentElement.classList.contains('remove-from-fav-btn')) {
+                    const btn = target.closest('.remove-from-fav-btn');
+                    const id = parseInt(btn.dataset.productId);
+                    removeFromFavorites(id);
+                }
+                
+                if (target.id === 'modal-add-to-cart-btn') {
+                    const id = parseInt(target.dataset.productId);
+                    addToCart(id);
+                    toggleModal(productModal, false);
+                }
+                
+                if (target.id === 'modal-add-to-fav-btn' || target.parentElement.id === 'modal-add-to-fav-btn') {
+                     const btn = target.closest('#modal-add-to-fav-btn');
+                     const id = parseInt(btn.dataset.productId);
+                     toggleFavorite(id);
+                     
+                     const isFavorited = favorites.includes(id);
+                     const favBtnIcon = btn.querySelector('.ph-heart');
+                     btn.classList.toggle('favorited', isFavorited);
+                     favBtnIcon.classList.toggle('ph-fill', isFavorited);
+                     favBtnIcon.classList.toggle('ph', !isFavorited);
+                }
+
+            });
+
+            loadSession();
+            renderProducts();
+            updateCartUI();
+            updateFavoritesUI();
+
+        });
+    </script>
+
+</body>
+</html>
